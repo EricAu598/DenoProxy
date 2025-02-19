@@ -34,14 +34,22 @@ Deno.serve(async (req) => {
 
     // 去掉 /proxy 前缀，剩余部分作为相对路径
     const proxyPath = url.pathname.slice("/proxy".length);
-    // 构造最终的请求 URL：以存储的 baseUrl 为基准，加上剩余路径和原有查询参数（注意：此处不包括 setUrl 参数，因为已单独处理）
+    // 创建一个新的 URLSearchParams，排除 key 参数
+    const filteredParams = new URLSearchParams();
+    for (const [key, value] of url.searchParams.entries()) {
+      if (key !== 'key') {
+        filteredParams.set(key, value);
+      }
+    }
+    
+    // 构造最终的请求 URL：以存储的 baseUrl 为基准，加上剩余路径和过滤后的查询参数
     let finalUrl: string;
     try {
-      finalUrl = new URL(proxyPath + url.search, baseUrl).toString();
+      const searchString = filteredParams.toString() ? `?${filteredParams.toString()}` : '';
+      finalUrl = new URL(proxyPath + searchString, baseUrl).toString();
     } catch {
       return new Response("构造目标 URL 出错。", { status: 500 });
     }
-
     // 构造一个新的请求，将客户端的 method、headers 和 body 传递过去
     const proxyRequest = new Request(finalUrl, {
       method: req.method,
