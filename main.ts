@@ -6,7 +6,9 @@ const TARGET_KEY = ["targetUrl"];
 
 Deno.serve(async (req) => {
   const url = new URL(req.url);
-
+  // 记录请求信息
+  console.log(`[${new Date().toISOString()}] ${req.method} ${url.pathname}${url.search}`);
+  
   // 如果请求带有 setUrl 参数，则更新目标 URL
   if (url.searchParams.has("setUrl")) {
     const newTargetUrl = url.searchParams.get("setUrl")!;
